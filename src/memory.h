@@ -15,13 +15,13 @@
 
 /*
  * https://developer.arm.com/docs/ddi0595/g/aarch64-system-registers/sctlr_el2
- * SCTL_I enables instruction caches.
- * SCTL_C enables data caches.
- * SCTL_M enables the MMU.
+ * SCTLR_I enables instruction caches.
+ * SCTLR_C enables data caches.
+ * SCTLR_M enables the MMU.
  */
-#define SCTL_I (1UL << 12)
-#define SCTL_C (1UL << 2)
-#define SCTL_M (1UL)
+#define SCTLR_I (1UL << 12)
+#define SCTLR_C (1UL << 2)
+#define SCTLR_M (1UL)
 
 /*
  * https://developer.arm.com/documentation/100442/0100/register-descriptions/aarch64-system-registers/tcr-el2--translation-control-register--el2

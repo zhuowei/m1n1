@@ -24,13 +24,13 @@ CACHE_RANGE_OP(dc_cvac_range, "dc cvac")
 CACHE_RANGE_OP(dc_cvau_range, "dc cvau")
 CACHE_RANGE_OP(dc_civac_range, "dc civac")
 
-static inline uint64_t read_sctl(void)
+static inline uint64_t read_sctlr(void)
 {
     sysop("isb");
     return mrs(SCTLR_EL2);
 }
 
-static inline void write_sctl(uint64_t val)
+static inline void write_sctlr(uint64_t val)
 {
     msr(SCTLR_EL2, val);
     sysop("isb");
@@ -224,18 +224,18 @@ void mmu_init(void)
     _mmu_add_default_mappings();
     _mmu_configure();
 
-    uint64_t sctl_old = read_sctl();
-    uint64_t sctl_new = sctl_old | SCTL_I | SCTL_C | SCTL_M;
+    uint64_t sctlr_old = read_sctlr();
+    uint64_t sctlr_new = sctlr_old | SCTLR_I | SCTLR_C | SCTLR_M;
 
-    printf("MMU: SCTL_EL2: %x -> %x\n", sctl_old, sctl_new);
-    write_sctl(sctl_new);
+    printf("MMU: SCTLR_EL2: %x -> %x\n", sctlr_old, sctlr_new);
+    write_sctlr(sctlr_new);
     printf("MMU: running with MMU and caches enabled!\n");
 }
 
 void mmu_shutdown(void)
 {
     printf("MMU: shutting down...\n");
-    write_sctl(read_sctl() & ~(SCTL_I | SCTL_C | SCTL_M));
+    write_sctlr(read_sctlr() & ~(SCTLR_I | SCTLR_C | SCTLR_M));
     printf("MMU: shutdown successful, clearing caches\n");
     dcsw_op_all(DCSW_OP_DCCISW);
 }
