@@ -62,10 +62,10 @@ static inline void write_sctl(uint64_t val)
 #define ENTRIES_PER_TABLE 2048
 #define L2_PAGE_SIZE 0x2000000
 
-
 static uint64_t __pagetable_L0[2] ALIGNED(PAGE_SIZE);
 static uint64_t __pagetable_L1[2][ENTRIES_PER_TABLE] ALIGNED(PAGE_SIZE);
-static uint64_t __pagetable_L2[MAX_L2_TABLES][ENTRIES_PER_TABLE] ALIGNED(PAGE_SIZE);
+static uint64_t
+    __pagetable_L2[MAX_L2_TABLES][ENTRIES_PER_TABLE] ALIGNED(PAGE_SIZE);
 static uint32_t __pagetable_L2_next = 0;
 
 static uint64_t _mmu_make_block_pte(uintptr_t addr, uint8_t attribute_index)
@@ -234,8 +234,8 @@ void mmu_init(void)
 
 void mmu_shutdown(void)
 {
-    // FIXME: do we need to flush caches here?
     printf("MMU: shutting down...\n");
     write_sctl(read_sctl() & ~(SCTL_I | SCTL_C | SCTL_M));
-    printf("MMU: shutdown successful.\n");
+    printf("MMU: shutdown successful, clearing caches\n");
+    dcsw_op_all(DCSW_OP_DCCISW);
 }
