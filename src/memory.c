@@ -206,7 +206,8 @@ static void _mmu_configure(void)
     msr(MAIR_EL2, (MAIR_ATTR_NORMAL_DEFAULT << MAIR_SHIFT_NORMAL) |
                       (MAIR_ATTR_DEVICE_nGnRnE << MAIR_SHIFT_DEVICE_nGnRnE) |
                       (MAIR_ATTR_DEVICE_nGnRE << MAIR_SHIFT_DEVICE_nGnRE));
-    msr(TCR_EL2, TG0_16K | PS_1TB);
+    msr(TCR_EL2, TCR_TG0_16K | TCR_PS_1TB | TCR_SH0_IS | TCR_ORGN0_WBWA |
+                     TCR_IRGN0_WBWA | TCR_T0SZ_48BIT);
     msr(TTBR0_EL2, (uintptr_t)__pagetable_L0);
 
     // Armv8-A Address Translation, 100940_0101_en, page 28

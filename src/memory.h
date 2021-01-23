@@ -24,10 +24,21 @@
 #define SCTLR_M (1UL)
 
 /*
- * https://developer.arm.com/documentation/100442/0100/register-descriptions/aarch64-system-registers/tcr-el2--translation-control-register--el2
+ * https://developer.arm.com/docs/ddi0595/h/aarch64-system-registers/tcr_el2
+ * TCR_PS_1TB selects 40 bits/1TB physical address size (TODO: is this correct?)
+ * TCR_TG0_16K selects 16K pages
+ * TCR_SH0_IS marks memory used during translation table walks as inner sharable
+ * TCR_ORGN0_WBWA and TCR_IRGN0_WBWA set the cacheability atrributes for memory
+ *                used during translation table walks to Inner/Outer
+ *                Write-Back Read-Allocate Write-Allocate Cacheable
+ * TCR_T0SZ_48BIT selects 48bit virtual addresses
  */
-#define PS_1TB ((0b010UL) << 16)
-#define TG0_16K ((0b10UL) << 14)
+#define TCR_PS_1TB ((0b010UL) << 16)
+#define TCR_TG0_16K ((0b10UL) << 14)
+#define TCR_SH0_IS ((0b11UL) << 12)
+#define TCR_ORGN0_WBWA ((0b01UL) << 10)
+#define TCR_IRGN0_WBWA ((0b01UL) << 8)
+#define TCR_T0SZ_48BIT ((16UL) << 0)
 
 /*
  * aarch64 allows to configure attribute sets for up to eight different memory
