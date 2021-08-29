@@ -80,6 +80,10 @@ if len(args.boot_args) > 0:
         tba.video.display = 1
     print(f"Setting boot arguments to {boot_args!r}")
     tba.cmdline = boot_args
+# hack: iOS
+if True:
+    tba.virt_base += (0xfffffff007004000 - 0xfffffe0007004000)
+    tba.devtree += (0xfffffff007004000 - 0xfffffe0007004000)
 
 iface.writemem(image_addr + bootargs_off, BootArgs.build(tba))
 

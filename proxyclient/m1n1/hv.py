@@ -1214,7 +1214,9 @@ class HV(Reloadable):
 
         self.tba.mem_size = mem_size
         self.tba.phys_base = phys_base
-        self.tba.virt_base = 0xfffffe0010000000 + (phys_base & (32 * 1024 * 1024 - 1))
+        # TODO(zhuowei): detect this!
+        #self.tba.virt_base = 0xfffffe0010000000 + (phys_base & (32 * 1024 * 1024 - 1))
+        self.tba.virt_base = 0xfffffff010000000 + (phys_base & (32 * 1024 * 1024 - 1))
         self.tba.devtree = self.adt_base - phys_base + self.tba.virt_base
         self.tba.top_of_kernel_data = guest_base + image_size
 
