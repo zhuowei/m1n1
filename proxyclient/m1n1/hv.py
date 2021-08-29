@@ -1258,7 +1258,7 @@ class HV(Reloadable):
     def run_code(self, code):
         exec(code, self.shell_locals)
 
-    def start(self):
+    def start(self, step=False):
         print("Disabling other iodevs...")
         for iodev in IODEV:
             if iodev != self.iodev:
@@ -1291,6 +1291,9 @@ class HV(Reloadable):
 
         self.iface.dev.timeout = None
         self.default_sigint = signal.signal(signal.SIGINT, self._handle_sigint)
+        if step:
+          self.u.msr(MDSCR_EL1, MDSCR(SS=1, MDE=1).value)
+          self._stepping = True
 
         if self.wdt_cpu is not None:
             self.p.hv_wdt_start(self.wdt_cpu)
