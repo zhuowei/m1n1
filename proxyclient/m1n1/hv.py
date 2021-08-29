@@ -1119,7 +1119,17 @@ class HV(Reloadable):
             def u32(a, b):
                 return a[b] | (a[b+1] << 8) | (a[b+2] << 16) | (a[b+3] << 24)
 
-            kernel_slide = (self.u.heap_top & (32 * 1024 * 1024 - 1))
+
+            phys_base = guest_base = self.u.heap_top
+            guest_base += 16 << 20 # ensure guest starts within a 16MB aligned region of mapped RAM
+            guest_base += align(self.u.ba.devtree_size)
+            tc_start, tc_size = self.u.adt["chosen"]["memory-map"].TrustCache
+            guest_base += align(tc_size)
+
+            virt_base = 0xfffffff010000000 + (phys_base & (32 * 1024 * 1024 - 1))
+            sym_offset = macho.vmin - guest_base + phys_base - virt_base
+
+            kernel_slide = -sym_offset
             print("{:x}".format(kernel_slide))
 
             def modSegment(indata, fileoff, cmd):

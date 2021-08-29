@@ -140,6 +140,9 @@ class MachO:
         self.entry = None
         for cmd in self.obj.cmds:
             if cmd.cmd == MachOLoadCmdType.SEGMENT_64:
+                if cmd.args.vmsize == 0: # iPadOS HACK
+                    print("vmsize = 0??", cmd)
+                    continue
                 self.vmin = min(self.vmin, cmd.args.vmaddr)
                 self.vmax = max(self.vmax, cmd.args.vmaddr + cmd.args.vmsize)
             elif cmd.cmd == MachOLoadCmdType.UNIXTHREAD:
