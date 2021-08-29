@@ -12,6 +12,13 @@ from inspect import isfunction, signature
 
 __all__ = ["ExitConsole", "run_shell"]
 
+drunk = False
+
+def drunk_cmd(arg=None):
+    global drunk
+    drunk = not drunk
+    print("yep", drunk)
+
 class HistoryConsole(code.InteractiveConsole):
     def __init__(self, locals=None, filename="<console>",
                  histfile=os.path.expanduser("~/.m1n1-history")):
@@ -161,6 +168,7 @@ def run_shell(locals, msg=None, exitmsg=None):
 
         locals['help'] = help_cmd
         locals['debug'] = debug_cmd
+        locals['drunk'] = drunk_cmd
         for obj_name in locals.keys():
             obj = locals.get(obj_name)
             if obj is None or obj_name.startswith('_'):
@@ -190,7 +198,10 @@ def run_shell(locals, msg=None, exitmsg=None):
 
         try:
             con = HistoryConsole(locals)
-            con.interact(msg, exitmsg)
+            if drunk:
+                locals['step']()
+            else:
+                con.interact(msg, exitmsg)
         except ExitConsole as e:
             if len(e.args):
                 return e.args[0]
