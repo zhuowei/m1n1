@@ -8,7 +8,7 @@ from .tgtypes import *
 from .proxy import IODEV, START, EVENT, EXC, EXC_RET, ExcInfo
 from .utils import *
 from .sysreg import *
-from .macho import MachO
+from .macho import MachO, MachOLoadCmdType, MachOHeader, MachOCmd
 from .adt import load_adt
 from . import xnutools, shell
 
@@ -1113,8 +1113,37 @@ class HV(Reloadable):
             print("Done.")
             return a.tobytes()
 
+        def rebase_hook(data, segname, size, fileoff, dest):
+            if segname != "__TEXT":
+                return data
+            def u32(a, b):
+                return a[b] | (a[b+1] << 8) | (a[b+2] << 16) | (a[b+3] << 24)
+
+            kernel_slide = (self.u.heap_top & (32 * 1024 * 1024 - 1))
+            print("{:x}".format(kernel_slide))
+
+            def modSegment(indata, fileoff, cmd):
+                indata[fileoff + 24:fileoff + 24 + 8] = struct.pack("<Q", cmd.args.vmaddr + kernel_slide)
+                littleoff = fileoff + 0x48
+                for sec_index in range(cmd.args.nsects):
+                    indata[littleoff + 0x20:littleoff + 0x20 + 8] = struct.pack("<Q", cmd.args.sections[sec_index].addr + kernel_slide)
+                    littleoff += 0x50
+            indata = bytearray(data)
+            macho_header = MachOHeader.parse(indata)
+            fileoff = MachOHeader.sizeof()
+
+            for index in range(macho_header.ncmds):
+                cmd = MachOCmd.parse(indata[fileoff:])
+                if cmd.cmd == MachOLoadCmdType.SEGMENT_64:
+                    modSegment(indata, fileoff, cmd)
+                fileoff += u32(indata, fileoff + 4)
+            with open("outfile.macho", "wb") as outfile:
+                outfile.write(indata)
+            return indata
+
         #image = macho.prepare_image(load_hook)
-        image = macho.prepare_image()
+        #image = macho.prepare_image()
+        image = macho.prepare_image(rebase_hook)
         sepfw_start, sepfw_length = self.u.adt["chosen"]["memory-map"].SEPFW
         tc_start, tc_size = self.u.adt["chosen"]["memory-map"].TrustCache
 
