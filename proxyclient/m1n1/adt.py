@@ -31,6 +31,7 @@ STD_PROPERTIES = {
     "model": CString("ascii"),
     "#size-cells": Int32ul,
     "#address-cells": Int32ul,
+    "RAMDisk": ADT2Tuple,
 }
 
 def parse_prop(node, path, name, v):
