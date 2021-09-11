@@ -36,6 +36,8 @@ if len(args.boot_args) > 0:
     boot_args = " ".join(args.boot_args)
     hv.set_bootargs(boot_args)
 
+hv.ramdisk = open("/Volumes/thickhd/docs/macos12b5/RestoreRamdisk.dmg", "rb").read()
+
 symfile = None
 if args.symbols:
     symfile = args.symbols.open("rb")

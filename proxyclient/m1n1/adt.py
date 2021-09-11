@@ -40,6 +40,7 @@ STD_PROPERTIES = {
     "clock-ids": GreedyRange(Int32ul),
     "clock-gates": GreedyRange(Int32ul),
     "power-gates": GreedyRange(Int32ul),
+    "RAMDisk": ADT2Tuple,
 }
 
 PMGRPSRegs = GreedyRange(Struct(

@@ -995,6 +995,7 @@ class HV(Reloadable):
         self.u.msr(ACTLR_EL12, actlr.value)
 
         self.setup_adt()
+        self.ramdisk = None
 
     def map_vuart(self):
         zone = irange(0x2_35200000, 0x4000)
@@ -1210,6 +1211,12 @@ class HV(Reloadable):
         self.bootargs_off = image_size
         bootargs_size = 0x4000
         image_size += bootargs_size
+        ramdisk_size = 0
+        ramdisk_off = 0
+        if self.ramdisk is not None:
+            ramdisk_off = image_size
+            ramdisk_size = align(len(self.ramdisk))
+            image_size += ramdisk_size
 
         print(f"Total region size: 0x{image_size:x} bytes")
 
@@ -1243,11 +1250,19 @@ class HV(Reloadable):
         print(f"Copying TrustCache (0x{tc_size:x} bytes)...")
         self.p.memcpy8(tc_base, tc_start, tc_size)
 
+        if self.ramdisk is not None:
+            print(f"Loading RAMDisk (0x{ramdisk_size:x} bytes)...")
+            self.u.compressed_writemem(guest_base + ramdisk_off, self.ramdisk, True)
+            self.p.dc_cvau(guest_base + ramdisk_off, ramdisk_size)
+            #self.p.ic_ivau(guest_base + ramdisk_off, ramdisk_size)
+
         print(f"Adjusting addresses in ADT...")
         self.adt["chosen"]["memory-map"].SEPFW = (guest_base + sepfw_off, sepfw_length)
         self.adt["chosen"]["memory-map"].TrustCache = (tc_base, tc_size)
         self.adt["chosen"]["memory-map"].DeviceTree = (self.adt_base, align(self.u.ba.devtree_size))
         self.adt["chosen"]["memory-map"].BootArgs = (guest_base + self.bootargs_off, bootargs_size)
+        if self.ramdisk is not None:
+            self.adt["chosen"]["memory-map"].RAMDisk = (guest_base + ramdisk_off, ramdisk_size)
 
         print(f"Setting up bootargs at 0x{guest_base + self.bootargs_off:x}...")
 
