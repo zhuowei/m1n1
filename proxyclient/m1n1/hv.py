@@ -132,6 +132,8 @@ class HV(Reloadable):
         self.shell_locals = {}
         self.xnu_mode = False
         self._update_shell_locals()
+        self.ramdisk = None
+        self.trustcache = None
 
     def _reloadme(self):
         super()._reloadme()
@@ -980,7 +982,6 @@ class HV(Reloadable):
         self.u.msr(ACTLR_EL12, actlr.value)
 
         self.setup_adt()
-        self.ramdisk = None
 
     def map_vuart(self):
         zone = irange(0x2_35200000, 0x4000)
@@ -1086,6 +1087,9 @@ class HV(Reloadable):
 
         self.symbols = [(v, k) for k, v in macho.symbols.items()]
         self.symbols.sort()
+
+        if self.trustcache:
+            self.u.adt["chosen"]["memory-map"].TrustCache[1] = len(self.trustcache)
 
         def load_hook(data, segname, size, fileoff, dest):
             if segname != "__TEXT_EXEC":
@@ -1201,7 +1205,11 @@ class HV(Reloadable):
         self.p.memcpy8(guest_base + sepfw_off, sepfw_start, sepfw_length)
 
         print(f"Copying TrustCache (0x{tc_size:x} bytes)...")
-        self.p.memcpy8(tc_base, tc_start, tc_size)
+        if self.trustcache:
+            self.u.compressed_writemem(tc_base, self.trustcache, True)
+            self.p.dc_cvau(tc_base, len(self.trustcache))
+        else:
+            self.p.memcpy8(tc_base, tc_start, tc_size)
 
         if self.ramdisk is not None:
             print(f"Loading RAMDisk (0x{ramdisk_size:x} bytes)...")

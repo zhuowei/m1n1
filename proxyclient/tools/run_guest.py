@@ -33,7 +33,10 @@ if len(args.boot_args) > 0:
     boot_args = " ".join(args.boot_args)
     hv.set_bootargs(boot_args)
 
-hv.ramdisk = open("/Volumes/thickhd/docs/macos12b5/RestoreRamdisk.dmg", "rb").read()
+#hv.ramdisk = open("/Volumes/thickhd/docs/macos12b5/RestoreRamdisk.dmg", "rb").read()
+hv.ramdisk = open("/Volumes/thickhd/docs/ipados15b6/RestoreRamdisk.dmg", "rb").read()
+# see trust_cache_init for header format: num_caches, offsets[0], ...
+hv.trustcache = b"\x01\x00\x00\x00\x08\x00\x00\x00" + open("/Volumes/thickhd/docs/ipados15b6/Firmware/RestoreRamdisk.trustcache", "rb").read()
 
 symfile = None
 if args.symbols:
